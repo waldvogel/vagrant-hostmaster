@@ -3,14 +3,12 @@ module Vagrant
     module Command
       class Update < Vagrant::Command::Base
         def execute
-          options = {}
-
-          opts = OptionParser.new do |opts|
+          options = OptionParser.new do |opts|
             opts.banner = "Usage: vagrant hosts update [<vm-name> [...]]"
           end
 
           # Parse the options
-          argv = parse_options(opts)
+          argv = parse_options(options)
           return if !argv
 
           with_target_vms(argv) do |vm|

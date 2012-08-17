@@ -3,14 +3,12 @@ module Vagrant
     module Command
       class List < Vagrant::Command::Base
         def execute
-          options = {}
-
-          opts = OptionParser.new do |opts|
+          options = OptionParser.new do |opts|
             opts.banner = "Usage: vagrant hosts list"
           end
 
           # Parse the options
-          argv = parse_options(opts)
+          argv = parse_options(options)
           return if !argv
           raise Vagrant::Errors::CLIInvalidUsage, :help => opts.help.chomp if argv.length != 0
 
