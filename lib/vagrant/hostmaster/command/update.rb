@@ -27,7 +27,7 @@ module Vagrant
             type, (address, *) = vm.config.vm.networks.first
             address ||= '127.0.0.1'
             signature = "# VAGRANT: #{vm.uuid}"
-            system %Q(grep '#{signature}$' /etc/hosts && sudo sh -c 'sed -e \'/#{signature}$/ d\' -ibak /etc/hosts')
+            system %Q(sudo sh -c 'sed -e \'/#{signature}$/ d\' -ibak /etc/hosts')
             host_entry = "#{address}  #{vm.config.vm.host_name}  #{signature}"
             system %Q(sudo sh -c 'echo "#{host_entry}" >>/etc/hosts')
           end
