@@ -21,7 +21,7 @@ module Vagrant
 
         protected
           def remove(vm)
-            @env.ui.info("Removing host entry for #{vm.name} VM...", :prefix => false)
+            @env.ui.info("Removing host entry for #{vm.name} VM. Administrator privileges will be required...", :prefix => false)
             signature = "# VAGRANT: #{vm.uuid}"
             system %Q(sudo sed -e '/#{signature}$/ d' -ibak /etc/hosts)
           end

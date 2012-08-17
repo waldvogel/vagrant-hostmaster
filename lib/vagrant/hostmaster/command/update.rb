@@ -21,12 +21,14 @@ module Vagrant
 
         protected
           def update(vm)
-            @env.ui.info("Updating host entry for #{vm.name} VM...", :prefix => false)
+            @env.ui.info("Updating host entry for #{vm.name} VM. Administrator privileges will be required...", :prefix => false)
             type, (address, *) = vm.config.vm.networks.first
             address ||= '127.0.0.1'
             signature = "# VAGRANT: #{vm.uuid}"
             system %Q(sudo sh -c 'sed -e "/#{signature}$/ d" -ibak /etc/hosts')
-            host_entry = "#{address}  #{vm.config.vm.host_name}  #{signature}"
+            host_names = [vm.config.vm.host_name]
+            host_names += Array(vm.config.hosts.aliases)
+            host_entry = "#{address}  #{host_names.join(' ')}  #{signature}"
             system %Q(sudo sh -c 'echo "#{host_entry}" >>/etc/hosts')
           end
       end
