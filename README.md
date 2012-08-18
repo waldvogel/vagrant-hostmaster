@@ -1,6 +1,6 @@
-# Vagrant::Hostmaster
+# vagrant-hostmaster
 
-TODO: Write a gem description
+vagrant-hostmaster is a Vagrant plugin to manage /etc/hosts entries on both the host OS and guest VMs.
 
 ## Installation
 
@@ -18,7 +18,32 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+    Usage: vagrant hosts <command> [<args>]
+
+    Available subcommands:
+         list
+         remove
+         update
+
+    For help on any individual command run `vagrant hosts COMMAND -h`
+
+### List Host Entries
+
+    vagrant hosts list
+
+### Remove Host Entries
+
+    vagrant hosts remove [<vm-name> [...]]
+
+### Update Host Entries
+
+    vagrant hosts update [<vm-name> [...]]
+
+## TODO
+
+1. add commands to modify guests
+
+2. add provisioning support so that changes are made automatically
 
 ## Contributing
 

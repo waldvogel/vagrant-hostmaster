@@ -13,20 +13,12 @@ module Vagrant
           raise Vagrant::Errors::CLIInvalidUsage, :help => opts.help.chomp if argv.length != 0
 
           with_target_vms do |vm|
-            list vm
+            Hostmaster::VM.new(vm).list
           end
 
           # Success, exit status 0
           0
         end
-
-        protected
-          def list(vm)
-            type, (address, *) = vm.config.vm.networks.first
-            address ||= '127.0.0.1'
-            signature = "# VAGRANT: #{vm.uuid}"
-            system %Q(grep '#{signature}$' /etc/hosts)
-          end
       end
     end
   end

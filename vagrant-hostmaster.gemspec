@@ -4,9 +4,9 @@ require File.expand_path('../lib/vagrant/hostmaster/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["S. Brent Faulkner"]
   gem.email         = ["brent.faulkner@mosaic.com"]
-  gem.description   = %q{Vagrant plugin to modify host and guest hostfiles.}
-  gem.summary       = %q{Vagrant plugin to modify host and guest hostfiles.}
-  gem.homepage      = ""
+  gem.description   = %q{vagrant-hostmaster is a Vagrant plugin to manage /etc/hosts entries on both the host OS and guest VMs.}
+  gem.summary       = %q{Vagrant plugin to manage /etc/hosts entries.}
+  gem.homepage      = "https://github.com/mosaicxm/vagrant-hostmaster"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

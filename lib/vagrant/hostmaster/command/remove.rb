@@ -12,19 +12,13 @@ module Vagrant
           return if !argv
 
           with_target_vms(argv) do |vm|
-            remove vm
+            @env.ui.info("Removing host entry for #{name} VM. Administrator privileges will be required...", :prefix => false)
+            Hostmaster::VM.new(vm).remove
           end
 
           # Success, exit status 0
           0
         end
-
-        protected
-          def remove(vm)
-            @env.ui.info("Removing host entry for #{vm.name} VM. Administrator privileges will be required...", :prefix => false)
-            signature = "# VAGRANT: #{vm.uuid}"
-            system %Q(sudo sed -e '/#{signature}$/ d' -ibak /etc/hosts)
-          end
       end
     end
   end
