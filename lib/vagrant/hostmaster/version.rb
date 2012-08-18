@@ -1,5 +1,5 @@
 module Vagrant
   module Hostmaster
-    VERSION = "0.6.9"
+    VERSION = "0.6.10"
   end
 end
