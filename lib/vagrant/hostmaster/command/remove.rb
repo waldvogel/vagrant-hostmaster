@@ -1,7 +1,7 @@
 module Vagrant
   module Hostmaster
     module Command
-      class Remove < Vagrant::Command::Base
+      class Remove < Vagrant::Hostmaster::Command::Base
         def execute
           options = OptionParser.new do |opts|
             opts.banner = "Usage: vagrant hosts remove [<vm-name> [...]]"

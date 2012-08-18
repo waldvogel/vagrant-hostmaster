@@ -1,7 +1,7 @@
 module Vagrant
   module Hostmaster
     module Command
-      class List < Vagrant::Command::Base
+      class List < Vagrant::Hostmaster::Command::Base
         def execute
           options = OptionParser.new do |opts|
             opts.banner = "Usage: vagrant hosts list"

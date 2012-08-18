@@ -1,7 +1,7 @@
 module Vagrant
   module Hostmaster
     module Command
-      class Update < Vagrant::Command::Base
+      class Update < Vagrant::Hostmaster::Command::Base
         def execute
           options = OptionParser.new do |opts|
             opts.banner = "Usage: vagrant hosts update [<vm-name> [...]]"

@@ -1,4 +1,5 @@
 require 'vagrant/hostmaster/version'
+require 'vagrant/hostmaster/command/base'
 require 'vagrant/hostmaster/command/root'
 require 'vagrant/hostmaster/config'
 require 'vagrant/hostmaster/vm'
