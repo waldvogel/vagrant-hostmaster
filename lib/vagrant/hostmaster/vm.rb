@@ -12,7 +12,7 @@ module Vagrant
       end
 
       def add
-        system %Q(sudo sh -c 'echo "#{host_entry}" >>/etc/hosts')
+        sudo %Q(sh -c 'echo "#{host_entry}" >>/etc/hosts')
       end
 
       def list
@@ -20,7 +20,7 @@ module Vagrant
       end
 
       def remove
-        system %Q(sudo sed -e '/#{signature}$/ d' -ibak /etc/hosts)
+        sudo %Q(sed -e '/#{signature}$/ d' -ibak /etc/hosts)
       end
 
       def update
@@ -58,6 +58,10 @@ module Vagrant
 
         def signature
           @signature ||= "# VAGRANT: #{uuid}"
+        end
+
+        def sudo(command)
+          system %Q(sudo #{command})
         end
     end
   end
