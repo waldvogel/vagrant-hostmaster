@@ -11,20 +11,23 @@ module Vagrant
         @vm = vm
       end
 
-      def add
+      def add(options = {})
+        env.ui.info("Adding host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
         sudo %Q(sh -c 'echo "#{host_entry}" >>/etc/hosts')
       end
 
-      def list
+      def list(options = {})
         system %Q(grep '#{signature}$' /etc/hosts)
       end
 
-      def remove
+      def remove(options = {})
+        env.ui.info("Removing host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
         sudo %Q(sed -e '/#{signature}$/ d' -ibak /etc/hosts)
       end
 
-      def update
-        remove && add
+      def update(options = {})
+        env.ui.info("Updating host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
+        remove(:quiet => true) && add(:quiet => true)
       end
 
       protected
