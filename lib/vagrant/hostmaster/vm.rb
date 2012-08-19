@@ -9,7 +9,6 @@ module Vagrant
 
       class << self
         def process(method, vms)
-          vms = vms.collect { |vm| new(vm) }
           vms.each { |vm| vm.send method, vms.reject { |other_vm| other_vm.name == vm.name } }
         end
       end
@@ -18,53 +17,61 @@ module Vagrant
         @vm = vm
       end
 
-      def add(vms, options = {})
+      def add(options = {})
         env.ui.info("Adding host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
         sudo add_command
-        vms.each { |vm| vm.channel.sudo add_command }
+        with_other_vms { |vm| channel.sudo vm.add_command(uuid) }
       end
 
-      def list(vms, options = {})
-        system list_command
-        vms.each do |vm|
-          output = ""
-          vm.channel.execute(list_command, :error_check => false) do |type, data|
-            output << data if type == :stdout
-          end && env.ui.info("#{vm.name}:\n#{output}", :prefix => false)
+      def list(options = {})
+        output = `#{list_command}`.chomp
+        env.ui.info("Local host entry for #{name}...\n#{output}\n\n", :prefix => false) unless output.empty?
+
+        entries = []
+        with_other_vms do |vm|
+          entry = ""
+          channel.execute(vm.list_command(uuid), :error_check => false) do |type, data|
+            entry << data if type == :stdout
+          end
+          entry.chomp!
+          entries << entry unless entry.empty?
         end
+        env.ui.info("#{entries.size} guest host #{entries.size > 1 ? 'entries' : 'entry'} on #{name}...\n#{entries.join("\n")}\n\n", :prefix => false) unless entries.empty?
       end
 
-      def remove(vms, options = {})
+      def remove(options = {})
         env.ui.info("Removing host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
         sudo remove_command
-        vms.each { |vm| vm.channel.sudo remove_command }
+        with_other_vms { |vm| channel.sudo vm.remove_command(uuid) }
       end
 
-      def update(vms, options = {})
+      def update(options = {})
         env.ui.info("Updating host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
         sudo(remove_command) && sudo(add_command)
-        vms.each { |vm| vm.channel.sudo(remove_command) && vm.channel.sudo(add_command) }
+        with_other_vms { |vm| channel.sudo(vm.remove_command(uuid)) && channel.sudo(vm.add_command(uuid)) }
       end
 
       protected
-        def add_command
-          @add_command ||= %Q(sh -c 'echo "#{host_entry}" >>/etc/hosts')
+        def add_command(uuid = self.uuid)
+          %Q(sh -c 'echo "#{host_entry(uuid)}" >>/etc/hosts')
         end
 
         def address
-          @address ||= (addresses && addresses.first || '127.0.0.1')
+          # network parameters consist of an address and a hash of options
+          @address ||= (network_parameters && network_parameters.first)
         end
 
-        def addresses
-          @network_addresses ||= (network && network.last)
+        def network_parameters
+          # network is a pair of a network type and the network parameters
+          @network_parameters ||= (network && network.last)
         end
 
         def host_aliases
           @host_aliases ||= Array(config.hosts.aliases)
         end
 
-        def host_entry
-          @host_entry ||= "#{address}  #{host_names.join(' ')}  #{signature}"
+        def host_entry(uuid = self.uuid)
+          %Q(#{address}  #{host_names.join(' ')}  #{signature(uuid)})
         end
 
         def host_name
@@ -75,24 +82,35 @@ module Vagrant
           @host_names ||= (Array(host_name) + host_aliases)
         end
 
-        def list_command
-          @list_command ||= %Q(grep '#{signature}$' /etc/hosts)
+        def list_command(uuid = self.uuid)
+          %Q(grep '#{signature(uuid)}$' /etc/hosts)
         end
 
         def network
-          @network ||= config.vm.networks.first
+          # hostonly networks are the only ones we're interested in
+          @network ||= networks.find { |type,network_parameters| type == :hostonly }
         end
 
-        def remove_command
-          @remove_command ||= %Q(sed -e '/#{signature}$/ d' -ibak /etc/hosts)
+        def networks
+          @networks ||= config.vm.networks
         end
 
-        def signature
-          @signature ||= "# VAGRANT: #{uuid}"
+        def remove_command(uuid = self.uuid)
+          %Q(sed -e '/#{signature(uuid)}$/ d' -ibak /etc/hosts)
+        end
+
+        def signature(uuid = self.uuid)
+          %Q(# VAGRANT: #{uuid} (#{name}))
         end
 
         def sudo(command)
-          system %Q(sudo #{command})
+          `sudo #{command}`
+        end
+
+        def with_other_vms
+          env.vms.each do |name,vm|
+            yield Hostmaster::VM.new(vm) if vm.config.vm.networks.any? { |type,network_parameters| type == :hostonly } && vm.name != self.name
+          end
         end
     end
   end

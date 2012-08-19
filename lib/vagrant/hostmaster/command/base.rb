@@ -13,16 +13,13 @@ module Vagrant
           argv = parse_options(parser)
           return if !argv
 
-          vms = []
           with_target_vms(argv) do |vm|
             if vm.created?
-              vms << vm
+              Hostmaster::VM.new(vm).send sub_command.to_sym
             else
               vm.ui.info I18n.t("vagrant.commands.common.vm_not_created")
             end
           end
-
-          Hostmaster::VM.process(sub_command.to_sym, vms)
 
           # Success, exit status 0
           0

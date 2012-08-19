@@ -13,8 +13,7 @@ module Vagrant
 
         protected
           def remove(vm)
-            # TODO: need to pass collection of other vms
-            Hostmaster::VM.new(vm).remove other_vms
+            Hostmaster::VM.new(vm).remove
           end
       end
     end
