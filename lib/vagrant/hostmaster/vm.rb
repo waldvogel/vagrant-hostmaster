@@ -7,6 +7,14 @@ module Vagrant
 
       def_delegators :@vm, :config, :env, :name, :uuid
 
+      class << self
+        def process(method, vms)
+          vms.each do |vm|
+            new(vm).send method
+          end
+        end
+      end
+
       def initialize(vm)
         @vm = vm
       end
