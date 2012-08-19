@@ -5,13 +5,12 @@ module Vagrant
     class VM
       extend Forwardable
 
-      def_delegators :@vm, :config, :env, :name, :uuid
+      def_delegators :@vm, :channel, :config, :env, :name, :uuid
 
       class << self
         def process(method, vms)
-          vms.each do |vm|
-            new(vm).send method
-          end
+          vms = vms.collect { |vm| new(vm) }
+          vms.each { |vm| vm.send method, vms.reject { |other_vm| other_vm.name == vm.name } }
         end
       end
 
@@ -19,26 +18,39 @@ module Vagrant
         @vm = vm
       end
 
-      def add(options = {})
+      def add(vms, options = {})
         env.ui.info("Adding host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
-        sudo %Q(sh -c 'echo "#{host_entry}" >>/etc/hosts')
+        sudo add_command
+        vms.each { |vm| vm.channel.sudo add_command }
       end
 
-      def list(options = {})
-        system %Q(grep '#{signature}$' /etc/hosts)
+      def list(vms, options = {})
+        system list_command
+        vms.each do |vm|
+          output = ""
+          vm.channel.execute(list_command, :error_check => false) do |type, data|
+            output << data if type == :stdout
+          end && env.ui.info("#{vm.name}:\n#{output}", :prefix => false)
+        end
       end
 
-      def remove(options = {})
+      def remove(vms, options = {})
         env.ui.info("Removing host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
-        sudo %Q(sed -e '/#{signature}$/ d' -ibak /etc/hosts)
+        sudo remove_command
+        vms.each { |vm| vm.channel.sudo remove_command }
       end
 
-      def update(options = {})
+      def update(vms, options = {})
         env.ui.info("Updating host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
-        remove(:quiet => true) && add(:quiet => true)
+        sudo(remove_command) && sudo(add_command)
+        vms.each { |vm| vm.channel.sudo(remove_command) && vm.channel.sudo(add_command) }
       end
 
       protected
+        def add_command
+          @add_command ||= %Q(sh -c 'echo "#{host_entry}" >>/etc/hosts')
+        end
+
         def address
           @address ||= (addresses && addresses.first || '127.0.0.1')
         end
@@ -63,8 +75,16 @@ module Vagrant
           @host_names ||= (Array(host_name) + host_aliases)
         end
 
+        def list_command
+          @list_command ||= %Q(grep '#{signature}$' /etc/hosts)
+        end
+
         def network
           @network ||= config.vm.networks.first
+        end
+
+        def remove_command
+          @remove_command ||= %Q(sed -e '/#{signature}$/ d' -ibak /etc/hosts)
         end
 
         def signature

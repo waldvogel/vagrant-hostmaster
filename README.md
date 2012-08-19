@@ -109,7 +109,7 @@ modification (or verification) of the hosts entries.
 
 ## TODO
 
-1. add commands to modify guests
+1. clean up output of list subcommand
 
 ## Contributing
 
