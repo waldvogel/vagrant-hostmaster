@@ -110,6 +110,11 @@ modification (or verification) of the hosts entries.
 ## TODO
 
 1. clean up output of list subcommand
+2. provisioning support hasn't been modified to automatically handle the guest vms
+3. provisioning support has at least one problem -- which will be exposed when dealing
+  with #2... only the already created machines are processed which means that when initially
+  provisioning servers, the later ones will be missed... which means the remote
+  provisioning hook probably has to occur later in the chain
 
 ## Contributing
 

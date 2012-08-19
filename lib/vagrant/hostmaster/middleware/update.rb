@@ -13,7 +13,8 @@ module Vagrant
 
         protected
           def update(vm)
-            Hostmaster::VM.new(vm).update
+            # TODO: need to pass collection of other vms
+            Hostmaster::VM.new(vm).update other_vms
           end
       end
     end
