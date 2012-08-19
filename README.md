@@ -97,15 +97,15 @@ modification (or verification) of the hosts entries.
 
 ### List Host Entries
 
-    vagrant hosts list
+    vagrant hosts list [vm-name]
 
 ### Remove Host Entries
 
-    vagrant hosts remove [<vm-name> [...]]
+    vagrant hosts remove [vm-name]
 
 ### Update Host Entries
 
-    vagrant hosts update [<vm-name> [...]]
+    vagrant hosts update [vm-name]
 
 ## TODO
 
