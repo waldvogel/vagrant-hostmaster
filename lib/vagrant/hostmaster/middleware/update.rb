@@ -7,8 +7,8 @@ module Vagrant
         end
 
         def call(env)
-          update env[:vm]
           @app.call(env)
+          update env[:vm]
         end
 
         protected

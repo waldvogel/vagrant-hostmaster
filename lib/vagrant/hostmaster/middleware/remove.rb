@@ -13,7 +13,7 @@ module Vagrant
 
         protected
           def remove(vm)
-            Hostmaster::VM.new(vm).remove
+            Hostmaster::VM.new(vm).remove(:guests => false)
           end
       end
     end

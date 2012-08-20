@@ -12,5 +12,5 @@ Vagrant.commands.register(:hosts) { Vagrant::Hostmaster::Command::Root }
 
 Vagrant.actions[:destroy].insert_after(Vagrant::Action::VM::ProvisionerCleanup, Vagrant::Hostmaster::Middleware::Remove)
 
-Vagrant.actions[:provision].insert(Vagrant::Action::VM::Provision, Vagrant::Hostmaster::Middleware::Update)
-Vagrant.actions[:start].insert(Vagrant::Action::VM::Provision, Vagrant::Hostmaster::Middleware::Update)
+Vagrant.actions[:provision].insert_after(Vagrant::Action::VM::Provision, Vagrant::Hostmaster::Middleware::Update)
+Vagrant.actions[:start].insert_after(Vagrant::Action::VM::Provision, Vagrant::Hostmaster::Middleware::Update)
