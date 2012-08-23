@@ -1,4 +1,7 @@
 require 'forwardable'
+require "rbconfig"
+
+WINDOWS = !!(RbConfig::CONFIG['host_os'] =~ /mingw|mswin32|cygwin/)
 
 module Vagrant
   module Hostmaster
@@ -58,7 +61,11 @@ module Vagrant
 
       protected
         def add_command(uuid = self.uuid)
-          %Q(sh -c 'echo "#{host_entry(uuid)}" >>/etc/hosts')
+          if !!WINDOWS
+            %Q(sh -c 'echo "#{host_entry(uuid)}" >>$SYSTEMROOT/system32/drivers/etc/hosts')
+          else
+            %Q(sh -c 'echo "#{host_entry(uuid)}" >>/etc/hosts')
+          end
         end
 
         def address
@@ -91,7 +98,11 @@ module Vagrant
         end
 
         def list_command(uuid = self.uuid)
-          %Q(grep '#{signature(uuid)}$' /etc/hosts)
+          if !!WINDOWS
+            %Q(grep '#{signature(uuid)}$' %SYSTEMROOT%/system32/drivers/etc/hosts)
+          else
+            %Q(grep '#{signature(uuid)}$' /etc/hosts)
+          end
         end
 
         def network
@@ -109,7 +120,11 @@ module Vagrant
         end
 
         def remove_command(uuid = self.uuid)
-          %Q(sed -e '/#{signature(uuid)}$/ d' -ibak /etc/hosts)
+          if !!WINDOWS
+            %Q(sed -e '/#{signature(uuid)}$/ d' -ibak %SYSTEMROOT%/system32/drivers/etc/hosts)
+          else
+            %Q(sed -e '/#{signature(uuid)}$/ d' -ibak /etc/hosts)
+          end
         end
 
         def signature(uuid = self.uuid)
@@ -117,7 +132,12 @@ module Vagrant
         end
 
         def sudo(command)
-          `sudo #{command}`
+          if !!WINDOWS
+            `#{command}`
+          else
+            `sudo #{command}`
+          end
+
         end
 
         def with_other_vms
