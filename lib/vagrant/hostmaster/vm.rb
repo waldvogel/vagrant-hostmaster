@@ -1,7 +1,4 @@
 require 'forwardable'
-require "rbconfig"
-
-WINDOWS = !!(RbConfig::CONFIG['host_os'] =~ /mingw|mswin32|cygwin/)
 
 module Vagrant
   module Hostmaster
@@ -9,6 +6,12 @@ module Vagrant
       extend Forwardable
 
       def_delegators :@vm, :channel, :config, :env, :name, :uuid
+
+      class << self
+        def hosts_path
+          @hosts_path ||= (Util::Platform.windows? ? "#{ENV['SYSTEMROOT']}/system32/drivers/etc/hosts" : "/etc/hosts")
+        end
+      end
 
       def initialize(vm)
         @vm = vm
@@ -61,11 +64,7 @@ module Vagrant
 
       protected
         def add_command(uuid = self.uuid)
-          if !!WINDOWS
-            %Q(sh -c 'echo "#{host_entry(uuid)}" >>$SYSTEMROOT/system32/drivers/etc/hosts')
-          else
-            %Q(sh -c 'echo "#{host_entry(uuid)}" >>/etc/hosts')
-          end
+          %Q(sh -c 'echo "#{host_entry(uuid)}" >>#{self.class.hosts_path}')
         end
 
         def address
@@ -98,11 +97,7 @@ module Vagrant
         end
 
         def list_command(uuid = self.uuid)
-          if !!WINDOWS
-            %Q(grep '#{signature(uuid)}$' %SYSTEMROOT%/system32/drivers/etc/hosts)
-          else
-            %Q(grep '#{signature(uuid)}$' /etc/hosts)
-          end
+          %Q(grep '#{signature(uuid)}$' #{self.class.hosts_path})
         end
 
         def network
@@ -120,11 +115,7 @@ module Vagrant
         end
 
         def remove_command(uuid = self.uuid)
-          if !!WINDOWS
-            %Q(sed -e '/#{signature(uuid)}$/ d' -ibak %SYSTEMROOT%/system32/drivers/etc/hosts)
-          else
-            %Q(sed -e '/#{signature(uuid)}$/ d' -ibak /etc/hosts)
-          end
+          %Q(sed -e '/#{signature(uuid)}$/ d' -ibak #{self.class.hosts_path})
         end
 
         def signature(uuid = self.uuid)
@@ -132,12 +123,11 @@ module Vagrant
         end
 
         def sudo(command)
-          if !!WINDOWS
+          if Util::Platform.windows?
             `#{command}`
           else
             `sudo #{command}`
           end
-
         end
 
         def with_other_vms
