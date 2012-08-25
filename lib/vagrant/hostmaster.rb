@@ -1,4 +1,4 @@
-require 'vagrant/hostmaster/version'
+require 'vagrant'
 require 'vagrant/hostmaster/command/base'
 require 'vagrant/hostmaster/command/root'
 require 'vagrant/hostmaster/config'
@@ -8,7 +8,6 @@ require 'vagrant/hostmaster/middleware/update'
 
 Vagrant.commands.register(:hosts) { Vagrant::Hostmaster::Command::Root }
 Vagrant.config_keys.register(:hosts) { Vagrant::Hostmaster::Config }
-Vagrant.commands.register(:hosts) { Vagrant::Hostmaster::Command::Root }
 
 Vagrant.actions[:destroy].insert_after(Vagrant::Action::VM::ProvisionerCleanup, Vagrant::Hostmaster::Middleware::Remove)
 

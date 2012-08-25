@@ -15,6 +15,8 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Vagrant::Hostmaster::VERSION
 
-  gem.add_dependency('vagrant', '~>1.0.3')
-  gem.add_development_dependency('rake')
+  gem.add_dependency  'vagrant', '~>1.0.3'
+  gem.add_development_dependency  'bundler'
+  gem.add_development_dependency  'mocha', '~>0.12.3'
+  gem.add_development_dependency  'rake'
 end
