@@ -8,7 +8,7 @@ module Vagrant
 
         def call(env)
           @app.call(env)
-          update env[:vm]
+          update env[:vm] if env["vm"].state == :running
         end
 
         protected

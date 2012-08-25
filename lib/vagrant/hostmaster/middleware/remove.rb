@@ -7,7 +7,7 @@ module Vagrant
         end
 
         def call(env)
-          remove env[:vm]
+          remove env[:vm] if env["vm"].state == :running
           @app.call(env)
         end
 
