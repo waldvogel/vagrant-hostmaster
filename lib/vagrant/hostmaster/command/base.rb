@@ -14,8 +14,10 @@ module Vagrant
           return if !argv
 
           with_target_vms(argv) do |vm|
-            if vm.created?
+            if vm.state == :running
               Hostmaster::VM.new(vm).send sub_command.to_sym
+            elsif vm.created?
+              vm.ui.info I18n.t("vagrant.commands.common.vm_not_running")
             else
               vm.ui.info I18n.t("vagrant.commands.common.vm_not_created")
             end
