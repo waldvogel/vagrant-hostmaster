@@ -22,7 +22,9 @@ module Vagrant
 
         def test_not_running
           @env['vm'].stubs(:state).returns(:poweroff)
-          Vagrant::Hostmaster::VM.expects(:new).never
+          vm = Vagrant::Hostmaster::VM.new(@env['vm'])
+          Vagrant::Hostmaster::VM.expects(:new).with(@env['vm']).returns(vm)
+          vm.expects(:remove).with(:guests => false)
           @middleware.call(@env)
         end
 
