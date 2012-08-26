@@ -9,7 +9,7 @@ module Vagrant
 
       class << self
         def hosts_path
-          @hosts_path ||= (Util::Platform.windows? ? "#{ENV['SYSTEMROOT']}/system32/drivers/etc/hosts" : "/etc/hosts")
+          Util::Platform.windows? ? "#{ENV['SYSTEMROOT']}/system32/drivers/etc/hosts" : "/etc/hosts"
         end
       end
 
