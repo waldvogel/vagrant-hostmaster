@@ -5,7 +5,7 @@ require 'vagrant/hostmaster/test_helpers'
 
 module Vagrant
   module Hostmaster
-    class VMTest < Test::Unit::TestCase
+    class MultipleVMTest < Test::Unit::TestCase
       include Vagrant::TestHelpers
       include Vagrant::Hostmaster::TestHelpers
 
@@ -15,7 +15,8 @@ module Vagrant
         # TODO: test both windows and non-windows
         Util::Platform.stubs(:windows?).returns(false)
         @hosts_file = Tempfile.new('hosts')
-        hostmaster_box 'hostmaster.dev', '123.45.67.89', '01234567-89ab-cdef-fedc-ba9876543210'
+        hostmaster_box 'one.hostmaster.dev', '10.0.0.100', '11111111-1111-1111-1111-111111111111'
+        hostmaster_box 'two.hostmaster.dev', '10.0.0.200', '22222222-2222-2222-2222-222222222222'
         @vms = hostmaster_vms(vagrant_env(vagrantfile(hostmaster_config)))
       end
 
@@ -25,40 +26,30 @@ module Vagrant
         super
       end
 
-      def test_hosts_path
-        assert_equal '/etc/hosts', Vagrant::Hostmaster::VM.hosts_path
-      end
-
-      def test_hosts_path_for_windows
-        Util::Platform.stubs(:windows?).returns(true)
-        ENV.stubs(:[]).with('SYSTEMROOT').returns('/windows')
-        assert_equal '/windows/system32/drivers/etc/hosts', Vagrant::Hostmaster::VM.hosts_path
-      end
-
-      def test_add_local_hosts_entry
+      def test_add_local_hosts_entries
         Vagrant::Hostmaster::VM.stubs(:hosts_path).returns @hosts_file.path
-        @vms.each { |vm| vm.add }
+        @vms.each { |vm| vm.add :guests => false }
         assert_local_host_entries_for @vms, @hosts_file
       end
 
       def test_list_local_hosts_entry
         Vagrant::Hostmaster::VM.stubs(:hosts_path).returns @hosts_file.path
         write_local_host_entries_for @vms, @hosts_file
-        @vms.each { |vm| vm.list }
+        @vms.each { |vm| vm.list :guests => false }
         assert false
       end
 
       def test_remove_local_hosts_entry
         Vagrant::Hostmaster::VM.stubs(:hosts_path).returns @hosts_file.path
         write_local_host_entries_for @vms, @hosts_file
-        @vms.each { |vm| vm.remove }
+        @vms.each { |vm| vm.remove :guests => false }
         assert_no_local_host_entries_for @vms, @hosts_file
       end
 
       def test_update
         Vagrant::Hostmaster::VM.stubs(:hosts_path).returns @hosts_file.path
-        write_local_host_entries_for @vms, @hosts_file, :addresses => %w(10.10.10.10), :names => %w(www.hostmaster.dev)
-        @vms.each { |vm| vm.update }
+        write_local_host_entries_for @vms, @hosts_file, :addresses => %w(10.10.10.11 10.10.10.22), :names => %w(a.hostmaster.dev b.hostmaster.dev)
+        @vms.each { |vm| vm.update :guests => false }
         assert_local_host_entries_for @vms, @hosts_file
       end
     end

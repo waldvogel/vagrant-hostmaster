@@ -23,7 +23,7 @@ module Vagrant
           sudo add_command
         end
 
-        with_other_vms { |vm| channel.sudo vm.add_command(:uuid => uuid) } if process_guests?(options)
+        with_other_vms { |vm| channel.sudo vm.add_command(:uuid => uuid, :hosts_path => hosts_path) } if process_guests?(options)
       end
 
       def list(options = {})
@@ -36,7 +36,7 @@ module Vagrant
           entries = []
           with_other_vms do |vm|
             entry = ""
-            channel.execute(vm.list_command(:uuid => uuid), :error_check => false) do |type, data|
+            channel.execute(vm.list_command(:uuid => uuid, :hosts_path => hosts_path), :error_check => false) do |type, data|
               entry << data if type == :stdout
             end
             entry.chomp!
@@ -51,7 +51,7 @@ module Vagrant
           env.ui.info("Removing host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
           sudo remove_command
         end
-        with_other_vms { |vm| channel.sudo vm.remove_command(:uuid => uuid) } if process_guests?(options)
+        with_other_vms { |vm| channel.sudo vm.remove_command(:uuid => uuid, :hosts_path => hosts_path) } if process_guests?(options)
       end
 
       def update(options = {})
@@ -59,13 +59,14 @@ module Vagrant
           env.ui.info("Updating host entry for #{name} VM. Administrator privileges will be required...") unless options[:quiet]
           sudo(remove_command) && sudo(add_command)
         end
-        with_other_vms { |vm| channel.sudo(vm.remove_command(:uuid => uuid)) && channel.sudo(vm.add_command(:uuid => uuid)) } if process_guests?(options)
+        with_other_vms { |vm| channel.sudo(vm.remove_command(:uuid => uuid, :hosts_path => hosts_path)) && channel.sudo(vm.add_command(:uuid => uuid, :hosts_path => hosts_path)) } if process_guests?(options)
       end
 
       protected
         def add_command(options = {})
           uuid = options[:uuid] || self.uuid
-          %Q(sh -c 'echo "#{host_entry(uuid)}" >>#{self.class.hosts_path}')
+          hosts_path = options[:hosts_path] || self.hosts_path
+          %Q(sh -c 'echo "#{host_entry(uuid)}" >>#{hosts_path}')
         end
 
         def address
@@ -89,6 +90,10 @@ module Vagrant
           @host_names ||= (Array(host_name) + host_aliases)
         end
 
+        def hosts_path
+          self.class.hosts_path
+        end
+
         def process_guests?(options = {})
           {:guests => true}.merge(options)[:guests]
         end
@@ -99,7 +104,8 @@ module Vagrant
 
         def list_command(options = {})
           uuid = options[:uuid] || self.uuid
-          %Q(grep '#{signature(uuid)}$' #{self.class.hosts_path})
+          hosts_path = options[:hosts_path] || self.hosts_path
+          %Q(grep '#{signature(uuid)}$' #{hosts_path})
         end
 
         def network
@@ -118,7 +124,8 @@ module Vagrant
 
         def remove_command(options = {})
           uuid = options[:uuid] || self.uuid
-          %Q(sed -e '/#{signature(uuid)}$/ d' -ibak #{self.class.hosts_path})
+          hosts_path = options[:hosts_path] || self.hosts_path
+          %Q(sed -e '/#{signature(uuid)}$/ d' -ibak #{hosts_path})
         end
 
         def signature(uuid = self.uuid)
