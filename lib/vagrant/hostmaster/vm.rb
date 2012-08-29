@@ -27,7 +27,8 @@ module Vagrant
       end
 
       def hosts_path
-        self.class.hosts_path
+        # TODO: if windows guests are supported, this will need to be smarter
+        "/etc/hosts"
       end
 
       def list(options = {})
@@ -67,7 +68,7 @@ module Vagrant
       protected
         def add_command(options = {})
           uuid = options[:uuid] || self.uuid
-          hosts_path = options[:hosts_path] || self.hosts_path
+          hosts_path = options[:hosts_path] || self.class.hosts_path
           %Q(sh -c 'echo "#{host_entry(uuid)}" >>#{hosts_path}')
         end
 
@@ -102,7 +103,7 @@ module Vagrant
 
         def list_command(options = {})
           uuid = options[:uuid] || self.uuid
-          hosts_path = options[:hosts_path] || self.hosts_path
+          hosts_path = options[:hosts_path] || self.class.hosts_path
           %Q(grep '#{signature(uuid)}$' #{hosts_path})
         end
 
@@ -122,7 +123,7 @@ module Vagrant
 
         def remove_command(options = {})
           uuid = options[:uuid] || self.uuid
-          hosts_path = options[:hosts_path] || self.hosts_path
+          hosts_path = options[:hosts_path] || self.class.hosts_path
           %Q(sed -e '/#{signature(uuid)}$/ d' -ibak #{hosts_path})
         end
 
