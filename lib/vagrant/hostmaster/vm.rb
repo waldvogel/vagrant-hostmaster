@@ -26,23 +26,25 @@ module Vagrant
         with_other_vms { |vm| channel.sudo vm.add_command(:uuid => uuid, :hosts_path => hosts_path) } if process_guests?(options)
       end
 
+      def hosts_path
+        self.class.hosts_path
+      end
+
       def list(options = {})
         if process_local?(options)
           output = `#{list_command}`.chomp
-          env.ui.info("Local host entry for #{name}...\n#{output}\n\n", :prefix => false) unless output.empty?
+          env.ui.info("[local] #{output}\n\n", :prefix => false) unless output.empty?
         end
 
         if process_guests?(options)
-          entries = []
+          entries = ""
           with_other_vms do |vm|
-            entry = ""
             channel.execute(vm.list_command(:uuid => uuid, :hosts_path => hosts_path), :error_check => false) do |type, data|
-              entry << data if type == :stdout
+              entries << data if type == :stdout
             end
-            entry.chomp!
-            entries << entry unless entry.empty?
           end
-          env.ui.info("Guest host #{entries.size > 1 ? 'entries' : 'entry'} on #{name}...\n#{entries.join("\n")}\n\n", :prefix => false) unless entries.empty?
+          entries = entries.split($/).collect { |entry| "[#{name}] #{entry}" }.join("\n")
+          env.ui.info("#{entries}\n\n", :prefix => false) unless entries.empty?
         end
       end
 
@@ -88,10 +90,6 @@ module Vagrant
 
         def host_names
           @host_names ||= (Array(host_name) + host_aliases)
-        end
-
-        def hosts_path
-          self.class.hosts_path
         end
 
         def process_guests?(options = {})

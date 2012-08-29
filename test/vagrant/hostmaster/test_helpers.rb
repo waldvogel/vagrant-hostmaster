@@ -1,4 +1,5 @@
 require 'generator'
+require 'vagrant/hostmaster/ui/capture'
 
 module Vagrant
   module Hostmaster
@@ -25,10 +26,10 @@ module Vagrant
         end
 
         def assert_local_host_entries_for(vms, hosts_file)
-          hostmaster_boxes_with(vms) do |box,vm|
-            assert_local_host_entry_for vm, hosts_file
-            assert_local_host_address_of box[:address], vm, hosts_file
-            assert_local_host_name_of box[:name], vm, hosts_file
+          hostmaster_boxes.each do |name,box|
+            assert_local_host_entry_for box[:vm], hosts_file
+            assert_local_host_address_of box[:address], box[:vm], hosts_file
+            assert_local_host_name_of box[:host_name], box[:vm], hosts_file
           end
         end
 
@@ -90,51 +91,45 @@ module Vagrant
           end
         end
 
-        def hostmaster_box(name, address, uuid)
-          hostmaster_boxes << {:name => name, :address => address, :uuid => uuid}
+        def hostmaster_box(name, host_name, address, uuid)
+          hostmaster_boxes[name] = {:name => name, :host_name => host_name, :address => address, :uuid => uuid}
+          hostmaster_boxes
         end
 
         def hostmaster_boxes
-          @boxes ||= []
-        end
-
-        def hostmaster_boxes_with(vms)
-          each_box = hostmaster_boxes.each
-          vms.each do |vm|
-            yield each_box.next, vm
-          end
+          @boxes ||= {}
         end
 
         def hostmaster_config
-          count = 0
-          @boxes.inject("") do |config,box|
-            count += 1
+          hostmaster_boxes.inject("") do |config,(name,box)|
             config << <<-EOF
-              config.vm.define :box#{count} do |box|
-                box.vm.host_name = "#{box[:name]}"
+              config.vm.define :#{name} do |box|
+                box.vm.host_name = "#{box[:host_name]}"
                 box.vm.network :hostonly, "#{box[:address]}"
               end
             EOF
           end
         end
 
+        def hostmaster_env
+          Vagrant::Environment.new(:cwd => vagrantfile(hostmaster_config), :ui_class => Vagrant::Hostmaster::UI::Capture).load!
+        end
+
         def hostmaster_vms(env)
-          index = 0
           env.vms.values.collect do |vm|
+            box = hostmaster_boxes[vm.name]
             vm.stubs(:state).returns(:running)
-            vm.stubs(:uuid).returns(@boxes[index][:uuid])
-            index += 1
-            Vagrant::Hostmaster::VM.new(vm)
+            vm.stubs(:uuid).returns(box[:uuid])
+            box[:vm] = Vagrant::Hostmaster::VM.new(vm)
           end
         end
 
-        def write_local_host_entries_for(vms, hosts_file, options={})
-          each_address = (options[:addresses] || @boxes.collect { |box| box[:address] }).each
-          each_name = (options[:names] || @boxes.collect { |box| box[:name] }).each
-          each_uuid = (options[:uuids] || @boxes.collect { |box| box[:uuid] }).each
-          vms.each do |vm|
-            hosts_file.puts "#{each_address.next} #{each_name.next} # VAGRANT: #{each_uuid.next} (#{vm.name})"
+        def write_local_host_entries(hosts_file, entries={})
+          hostmaster_boxes.each do |name,box|
+            entry = box.merge(entries[name] || {})
+            hosts_file.puts "#{entry[:address]} #{entry[:host_name]} # VAGRANT: #{entry[:uuid]} (#{entry[:name]})"
           end
+          hosts_file.fsync
           hosts_file
         end
     end

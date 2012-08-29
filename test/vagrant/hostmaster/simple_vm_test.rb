@@ -5,7 +5,7 @@ require 'vagrant/hostmaster/test_helpers'
 
 module Vagrant
   module Hostmaster
-    class VMTest < Test::Unit::TestCase
+    class SimpleVMTest < Test::Unit::TestCase
       include Vagrant::TestHelpers
       include Vagrant::Hostmaster::TestHelpers
 
@@ -15,8 +15,8 @@ module Vagrant
         # TODO: test both windows and non-windows
         Util::Platform.stubs(:windows?).returns(false)
         @hosts_file = Tempfile.new('hosts')
-        hostmaster_box 'hostmaster.dev', '123.45.67.89', '01234567-89ab-cdef-fedc-ba9876543210'
-        @vms = hostmaster_vms(vagrant_env(vagrantfile(hostmaster_config)))
+        hostmaster_box :default, 'hostmaster.dev', '123.45.67.89', '01234567-89ab-cdef-fedc-ba9876543210'
+        @vms = hostmaster_vms(hostmaster_env)
       end
 
       def teardown
@@ -43,21 +43,23 @@ module Vagrant
 
       def test_list_local_hosts_entry
         Vagrant::Hostmaster::VM.stubs(:hosts_path).returns @hosts_file.path
-        write_local_host_entries_for @vms, @hosts_file
-        @vms.each { |vm| vm.list }
-        assert false
+        write_local_host_entries @hosts_file
+        hostmaster_boxes.each do |name,box|
+          output = Vagrant::Hostmaster::UI::Capture.capture { box[:vm].list }
+          assert_match /^\[local\]\s+#{box[:address]}\s+#{box[:host_name]}\s*# VAGRANT: #{box[:uuid]} \(#{name}\)$/, output
+        end
       end
 
       def test_remove_local_hosts_entry
         Vagrant::Hostmaster::VM.stubs(:hosts_path).returns @hosts_file.path
-        write_local_host_entries_for @vms, @hosts_file
+        write_local_host_entries @hosts_file
         @vms.each { |vm| vm.remove }
         assert_no_local_host_entries_for @vms, @hosts_file
       end
 
       def test_update
         Vagrant::Hostmaster::VM.stubs(:hosts_path).returns @hosts_file.path
-        write_local_host_entries_for @vms, @hosts_file, :addresses => %w(10.10.10.10), :names => %w(www.hostmaster.dev)
+        write_local_host_entries @hosts_file, :default => {:address => '10.10.10.10', :host_name => 'www.hostmaster.dev'}
         @vms.each { |vm| vm.update }
         assert_local_host_entries_for @vms, @hosts_file
       end
