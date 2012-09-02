@@ -31,15 +31,16 @@ module Vagrant
 
       def test_hosts_path_on_windows
         Util::Platform.stubs(:windows?).returns(true)
-        ENV.stubs(:[]).with('SYSTEMROOT').returns('/windows')
-        assert_equal '/windows/system32/drivers/etc/hosts', Vagrant::Hostmaster::VM.hosts_path
+        ENV.stubs(:[]).with('SYSTEMROOT').returns('C:\Windows')
+        Vagrant::Hostmaster::VM.stubs(:expand_path).with('system32/drivers/etc/hosts', 'C:\Windows').returns('C:/Windows/system32/drivers/etc/hosts')
+        assert_equal 'C:/Windows/system32/drivers/etc/hosts', Vagrant::Hostmaster::VM.hosts_path
       end
 
       def test_vm_hosts_path
         assert_equal '/etc/hosts', @vms.first.hosts_path
       end
 
-      def test_hosts_path_on_windows
+      def test_vm_hosts_path_on_windows
         Util::Platform.stubs(:windows?).returns(true)
         assert_equal '/etc/hosts', @vms.first.hosts_path
       end

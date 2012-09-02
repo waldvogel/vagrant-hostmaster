@@ -8,8 +8,12 @@ module Vagrant
       def_delegators :@vm, :channel, :config, :env, :name, :uuid
 
       class << self
+        def expand_path(relative_path, relative_to)
+          File.expand_path(relative_path, relative_to)
+        end
+
         def hosts_path
-          Util::Platform.windows? ? "#{ENV['SYSTEMROOT']}/system32/drivers/etc/hosts" : "/etc/hosts"
+          Util::Platform.windows? ? expand_path('system32/drivers/etc/hosts', ENV['SYSTEMROOT']) : '/etc/hosts'
         end
       end
 
