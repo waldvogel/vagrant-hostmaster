@@ -12,9 +12,9 @@ Clone the `standalone` branch into your project folder, for example:
 
 Include `hostmaster.rb` in your Vagrantfile:
 
-    require File.dirname(__FILE__) + "/hostmaster/hostmaster.rb""
+    require File.dirname(__FILE__) + "/hostmaster/hostmaster.rb"
 
-Then hostmaster should be working already...
+This should be enough to add hostmaster to your project.
 
 ## Usage
 
