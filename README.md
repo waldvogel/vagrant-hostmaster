@@ -8,7 +8,7 @@
 
 Clone the `standalone` branch into your project folder, for example:
 
-    git clone -b standalone <git://gigit://github.com/waldvogel/vagrant-hostmaster.gitthub.com/waldvogel/vagrant-hostmaster.git> hostmaster
+    git clone -b standalone <git://github.com/waldvogel/vagrant-hostmaster.git> hostmaster
 
 Include `hostmaster.rb` in your Vagrantfile:
 
