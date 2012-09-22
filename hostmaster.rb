@@ -1,10 +1,9 @@
-require 'vagrant'
-require 'vagrant/hostmaster/command/base'
-require 'vagrant/hostmaster/command/root'
-require 'vagrant/hostmaster/config'
-require 'vagrant/hostmaster/vm'
-require 'vagrant/hostmaster/middleware/remove'
-require 'vagrant/hostmaster/middleware/update'
+require File.dirname(__FILE__) + '/command/base'
+require File.dirname(__FILE__) + '/command/root'
+require File.dirname(__FILE__) + '/config'
+require File.dirname(__FILE__) + '/vm'
+require File.dirname(__FILE__) + '/middleware/remove'
+require File.dirname(__FILE__) + '/middleware/update'
 
 Vagrant.commands.register(:hosts) { Vagrant::Hostmaster::Command::Root }
 Vagrant.config_keys.register(:hosts) { Vagrant::Hostmaster::Config }

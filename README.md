@@ -1,12 +1,20 @@
 # vagrant-hostmaster
 
+**Standalone version (easier to include in a project directly, not via gem)**
+
 `vagrant-hostmaster` is a Vagrant plugin to manage /etc/hosts entries on both the host OS and guest VMs.
 
 ## Installation
 
-Install into vagrant's isolated RubyGems instance using:
+Clone the `standalone` branch into your project folder, for example:
 
-    $ vagrant gem install vagrant-hostmaster
+    git clone -b standalone <git://gigit://github.com/waldvogel/vagrant-hostmaster.gitthub.com/waldvogel/vagrant-hostmaster.git> hostmaster
+
+Include `hostmaster.rb` in your Vagrantfile:
+
+    require File.dirname(__FILE__) + "/hostmaster/hostmaster.rb""
+
+Then hostmaster should be working already...
 
 ## Usage
 
