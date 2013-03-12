@@ -107,6 +107,26 @@ modification (or verification) of the hosts entries.
 
     vagrant hosts update [vm-name]
 
+### Changing Sudoers File
+Changing the hosts file needs administrative permissions you could modify the sudoers 
+file to avoid typing your password every time while starting your vagrantbox.
+On OSX you can run following commands
+
+    sudo su
+    visudo
+
+add following lines
+
+    Cmnd_Alias VAGRANT_HOSTMASTER_ADD = /bin/sh -c echo * >>/etc/hosts
+    Cmnd_Alias VAGRANT_HOSTNASTER_REMOVE = /usr/bin/sed -e * d -ibak /etc/hosts
+    %staff ALL=(root) NOPASSWD: VAGRANT_HOSTMASTER_ADD, VAGRANT_HOSTNASTER_REMOVE
+
+saving the sudoers file and drop the sudo permissions with
+
+    sudo -k
+
+after this you should be able to update and remove the hosts without being forced to enter the password.
+
 ## Contributing
 
 1. Fork it
